@@ -7,14 +7,15 @@ provider:
   runtime: nodejs16.x
   stage: dev
   region: us-east-1
-
-
+  
 plugins:
   - serverless-iam-roles-per-function
 
 functions:
   createNote:
     handler: handler.createNote
+    environment:
+      NOTES_TABLE_NAME: !Ref notesTable
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -27,6 +28,13 @@ functions:
 
   updateNote:
     handler: handler.updateNote
+    environment:
+      NOTES_TABLE_NAME: !Ref notesTable
+    iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:UpdateItem
+      Resource: !GetAtt notesTable.Arn
     events:
       - http:
           method: put

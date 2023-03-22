@@ -1,6 +1,7 @@
 'use strict';
 const DynamoDB = require('aws-sdk/clients/dynamodb');
 const documentClient = new DynamoDB.DocumentClient({ region: 'us-east-1' });
+const NOTES_TABLE_NAME = process.env.NOTES_TABLE_NAME;
 
 const send = (statusCode, data) => {
   return {
@@ -11,10 +12,9 @@ const send = (statusCode, data) => {
 
 module.exports.createNote = async (event, context, cb) => {
   const data = JSON.parse(event.body);
-  console.log(data);
   try {
     const params = {
-      TableName: 'notes',
+      TableName: NOTES_TABLE_NAME,
       Item: {
         notesId: data.id,
         title: data.title,
@@ -25,17 +25,43 @@ module.exports.createNote = async (event, context, cb) => {
     await documentClient.put(params).promise();
     cb(null, send(201, data));
   } catch (err) {
-    console.log(err.message);
-    cb(null, send(500, err.message));
+    if (err.code === 'ConditionalCheckFailedException') {
+      cb(null, send(409, `Unable to insert record with ID ${data.id}`));
+    } else {
+      cb(null, send(500, err.message));
+    }
   }
 };
 
-module.exports.updateNote = async (event) => {
+module.exports.updateNote = async (event, context, cb) => {
   const notesId = event.pathParameters.id;
-  return {
-    statusCode: 200,
-    body: JSON.stringify(`The note with id ${notesId} is updated`),
-  };
+  const data = JSON.parse(event.body);
+  try {
+    const params = {
+      TableName: NOTES_TABLE_NAME,
+      Key: {
+        notesId,
+      },
+      UpdateExpression: `set #title= :title, #body = :body`,
+      ExpressionAttributeNames: {
+        '#title': 'title',
+        '#body': 'body',
+      },
+      ExpressionAttributeValues: {
+        ':title': data.title,
+        ':body': data.body,
+      },
+      ConditionExpression: 'attribute_exists(notesId)',
+    };
+    await documentClient.update(params).promise();
+    cb(null, send(200, data));
+  } catch (err) {
+    if (err.code === 'ConditionalCheckFailedException') {
+      cb(null, send(409, `No existing record for id: ${notesId}`));
+    } else {
+      cb(null, send(500, err.message));
+    }
+  }
 };
 
 module.exports.deleteNote = async (event) => {
