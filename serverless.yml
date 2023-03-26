@@ -12,6 +12,9 @@ plugins:
   - serverless-iam-roles-per-function
 
 functions:
+  authorizer:
+    handler: authorizer.handler
+
   createNote:
     handler: handler.createNote
     environment:
@@ -22,10 +25,11 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: !GetAtt notesTable.Arn
-    events:
+    events: 
       - http:
           method: post
           path: notes
+          authorizer: authorizer
 
   updateNote:
     handler: handler.updateNote
@@ -41,6 +45,7 @@ functions:
       - http:
           method: put
           path: notes/{id}
+          authorizer: authorizer
   
   deleteNote:
     handler: handler.deleteNote
@@ -56,6 +61,7 @@ functions:
       - http:
           method: delete
           path: notes/{id}
+          authorizer: authorizer
     
   getAllNotes:
     handler: handler.getallNotes
@@ -71,6 +77,7 @@ functions:
       - http:
           method: get
           path: notes
+          authorizer: authorizer
           
 # Cloud formation resouce
 resources:
