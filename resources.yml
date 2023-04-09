@@ -1,0 +1,58 @@
+Resources:
+  #notes dynamodb table
+  notesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions: 
+        - AttributeName: notesId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: notesId
+          KeyType: HASH
+      TableName: 'notes'
+      BillingMode: 'PAY_PER_REQUEST'
+
+  #cognito user pool
+  cognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: MyNotesUP
+  
+  #user pool web client
+  cognitoUserPoolWebClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref cognitoUserPool
+      ClientName: web
+      AllowedOAuthFlowsUserPoolClient: true
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - profile
+        - openid
+      AllowedOAuthFlows: 
+        - implicit
+      CallbackURLs: 
+       - http://localhost:3000
+      
+  
+  #cognito user pool domain
+  cognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties: 
+      Domain: mynotescdrd
+      UserPoolId: !Ref cognitoUserPool
+
+  #application parameters
+  userPoolIdParam:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Name: /notes/dev/userpoolId
+      Type: String
+      Value: !GetAtt cognitoUserPool.Arn
+  
+
+
+

@@ -14,6 +14,9 @@ plugins:
 functions:
   authorizer:
     handler: authorizer.handler
+    environment:
+      COGNITO_USERPOOL_ID: !Ref cognitoUserPool
+      COGNITO_WEB_CLIENT_ID: !Ref cognitoUserPoolWebClient
 
   createNote:
     handler: handler.createNote
@@ -77,19 +80,14 @@ functions:
       - http:
           method: get
           path: notes
-          authorizer: authorizer
-          
+          authorizer: 
+            name: userpool_authorizer
+            type: COGNITO_USER_POOLS
+            arn:  !GetAtt cognitoUserPool.Arn  
+            #${ssm:/notes/dev/userpoolId}
+
 # Cloud formation resouce
+
+  
 resources:
-  Resources:
-    notesTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        AttributeDefinitions: 
-          - AttributeName: notesId
-            AttributeType: S
-        KeySchema:
-          - AttributeName: notesId
-            KeyType: HASH
-        TableName: 'notes'
-        BillingMode: 'PAY_PER_REQUEST'
+  - ${file(resources.yml)}
