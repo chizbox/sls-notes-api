@@ -9,14 +9,14 @@ Resources:
       KeySchema:
         - AttributeName: notesId
           KeyType: HASH
-      TableName: 'notes'
+      TableName: notes-${self:provider.stage}
       BillingMode: 'PAY_PER_REQUEST'
 
   #cognito user pool
   cognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: MyNotesUP
+      UserPoolName: MyNotesUP-${self:provider.stage}
   
   #user pool web client
   cognitoUserPoolWebClient:
@@ -42,14 +42,14 @@ Resources:
   cognitoUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties: 
-      Domain: mynotescdrd
+      Domain: mynotescdrd-${self:provider.stage}
       UserPoolId: !Ref cognitoUserPool
 
   #application parameters
-  userPoolIdParam:
+  userPoolArnParam:
     Type: AWS::SSM::Parameter
     Properties: 
-      Name: /notes/dev/userpoolId
+      Name: /notes/${self:provider.stage}/userpoolId
       Type: String
       Value: !GetAtt cognitoUserPool.Arn
   
