@@ -25,3 +25,4 @@ artifacts:
 cache:
   paths:
     - 'notes/node_modules/**/*'
+privilege-mode: true
