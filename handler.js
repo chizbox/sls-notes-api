@@ -90,7 +90,6 @@ module.exports.deleteNote = async (event, context, cb) => {
 };
 
 module.exports.getallNotes = async (event, context, cb) => {
-  console.log( `Get All Notes`);
   context.callbackWaitsForEmptyEventLoop = false;
   try {
     const params = {
