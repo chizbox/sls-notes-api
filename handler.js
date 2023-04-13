@@ -100,4 +100,5 @@ module.exports.getallNotes = async (event, context, cb) => {
   } catch (err) {
     cb(null, send(500, err.message));
   }
+  
 };
