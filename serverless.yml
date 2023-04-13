@@ -84,10 +84,7 @@ functions:
             name: userpool_authorizer
             type: COGNITO_USER_POOLS
             arn:  !GetAtt cognitoUserPool.Arn  
-            #${ssm:/notes/dev/userpoolId}
 
 # Cloud formation resouce
-
-  
 resources:
   - ${file(resources.yml)}
